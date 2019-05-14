@@ -129,7 +129,7 @@ const displayTooltip = (mouseCoords, data) => {
   let markup = `
   Name: ${data.name}<br>
   Genre: ${data.category}<br>
-  Gross: $${data.value}
+  Gross: ${d3.format('$,.0f')(data.value)}
   `;
 
   tooltip.innerHTML = markup;

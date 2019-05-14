@@ -12,17 +12,17 @@ const colorScheme = [
 window.addEventListener('DOMContentLoaded', (e) => {
   const url =
     'https://cdn.rawgit.com/freeCodeCamp/testable-projects-fcc/a80ce8f9/src/data/tree_map/movie-data.json';
-  d3.json(url).then((response) => drawGraph(response));
+  d3.json(url).then((response) => drawChart(response));
 });
 
-const drawGraph = (movieData) => {
+const drawChart = (movieData) => {
   const chartTitle = 'Movie Sales';
   const chartDescription = 'Top 100 Highest Grossing Movies by Genre';
 
   const chartDimensions = {
-    width: 1100,
-    height: 900,
-    padding: { top: 120, bottom: 100, right: 70, left: 70 }
+    width: 1200,
+    height: 1200,
+    padding: { top: 120, bottom: 250, right: 70, left: 70 }
   };
 
   const titleX = 330;
@@ -80,11 +80,6 @@ const drawTreeMap = (svg, chartDimensions, data) => {
     .selectAll('g')
     .data(root.leaves())
     .join('g')
-    // .on('mousemove', (d) => {
-    //   const x = d3.event.pageX;
-    //   const y = d3.event.pageY;
-    //   displayTooltip({ x, y }, d.data);
-    // })
     .on('mousemove', (d) =>
       displayTooltip({ x: d3.event.pageX, y: d3.event.pageY }, d.data)
     )
@@ -141,35 +136,53 @@ const hideTooltip = () => {
 };
 
 const drawLegend = (svg) => {
-  const legendBoxWidth = 25;
-  const offset = { x: 0, y: 0 };
+  const legendBoxWidth = 20;
+  const offset = { x: 470, y: 1000 };
 
   const legend = svg.append('svg').attr('id', 'legend');
 
   const legendScale = d3.scaleOrdinal().domain([]);
   legendScale.range(
-    legendScale.domain().map((val, i) => offset.x + i * legendBoxWidth)
+    legendScale.domain().map((val, i) => offset.y + i * legendBoxWidth)
   );
-  const legendAxis = d3.axisBottom(legendScale);
-  legend
-    .append('g')
-    .attr(
-      'transform',
-      `translate(${legendBoxWidth - 0.5}, ${offset.y + legendBoxWidth})`
-    )
-    .call(legendAxis);
 
+  // console.log(fillColors);
   legend
     .selectAll('rect')
-    .data(fillColors)
+    .data(Object.keys(fillColors))
     .enter()
     .append('rect')
+    .classed('legend-item', true)
     .attr('stroke', '#333')
-    .attr('x', (d, i) => offset.x + legendBoxWidth * i)
-    .attr('y', offset.y)
-    .attr('fill', (d) => d)
+    .attr('x', (d, i) => {
+      return offset.x + Math.floor(i / 4) * 170;
+    })
+    .attr('y', (d, i) => {
+      const y = offset.y + legendBoxWidth * (i % 4) + (i % 4) * 10;
+      return y;
+    })
+    .attr('fill', (d) => fillColors[d])
     .attr('width', legendBoxWidth)
     .attr('height', legendBoxWidth);
+
+  legend
+    .selectAll('text')
+    .data(Object.keys(fillColors))
+    .enter()
+    .append('text')
+    .classed('legend-text', true)
+    .attr('x', (d, i) => {
+      return offset.x + Math.floor(i / 4) * 170 + legendBoxWidth + 10;
+    })
+    .attr('y', (d, i) => {
+      const y =
+        offset.y +
+        legendBoxWidth * (i % 4) +
+        (i % 4) * 10 +
+        legendBoxWidth / 1.3;
+      return y;
+    })
+    .text((d) => d);
 };
 
 const drawDescription = (svg, descriptionX, descriptionY, chartDescription) => {

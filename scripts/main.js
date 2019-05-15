@@ -25,9 +25,9 @@ const drawChart = (movieData) => {
     padding: { top: 120, bottom: 250, right: 70, left: 70 }
   };
 
-  const titleX = 330;
+  const titleX = chartDimensions.width / 2;
   const titleY = 60;
-  const descriptionX = 220;
+  const descriptionX = chartDimensions.width / 2;
   const descriptionY = 95;
 
   initFillColors(movieData);
@@ -88,7 +88,7 @@ const drawTreeMap = (svg, chartDimensions, data) => {
 
   leaf
     .append('rect')
-    .attr('class', 'tile')
+    .classed('tile', true)
     .attr('data-name', (d) => d.data.name)
     .attr('data-category', (d) => d.data.category)
     .attr('data-value', (d) => d.data.value)

@@ -80,10 +80,11 @@ const drawTreeMap = (svg, chartDimensions, data) => {
     .selectAll('g')
     .data(root.leaves())
     .join('g')
+    .attr('id', (d) => `leaf-${d.data.name}`)
     .on('mousemove', (d) =>
       displayTooltip({ x: d3.event.pageX, y: d3.event.pageY }, d.data)
     )
-    .on('mouseout', hideTooltip) //(d) => hideTooltip())
+    .on('mouseout', hideTooltip)
     .attr('transform', (d) => `translate(${d.x0},${d.y0})`);
 
   leaf
@@ -96,12 +97,59 @@ const drawTreeMap = (svg, chartDimensions, data) => {
     .attr('width', (d) => d.x1 - d.x0)
     .attr('height', (d) => d.y1 - d.y0);
 
+  var addCounter = 0;
   leaf
     .append('text')
     .classed('tile-name', true)
-    .attr('x', 5)
-    .attr('y', 10)
-    .text((d) => d.data.name);
+    .attr('x', 10)
+    .attr('y', 20)
+    .text((d) => d.data.name)
+    .call(wrapText);
+};
+
+/* (slightly) modified from [https://bl.ocks.org/mbostock/7555321] */
+const wrapText = (nameText) => {
+  const paddingRight = 10;
+  nameText.each(function() {
+    const text = d3.select(this);
+    const id = `leaf-${text.text()}`;
+    const siblingRect = document.getElementById(id).children[0];
+    const width = siblingRect.getAttribute('width') - paddingRight;
+
+    const words = text
+      .text()
+      .split(/\s+/)
+      .reverse();
+    let word;
+    let line = [];
+    let lineNumber = 0;
+    let lineHeight = 1.1;
+    const x = text.attr('x');
+    const y = text.attr('y');
+    let dy = parseFloat(text.attr('dy'));
+
+    let tspan = text
+      .text(null)
+      .append('tspan')
+      .attr('x', x)
+      .attr('y', y);
+
+    while ((word = words.pop())) {
+      line.push(word);
+      tspan.text(line.join(' '));
+      if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(' '));
+        line = [word];
+        tspan = text
+          .append('tspan')
+          .attr('x', x)
+          .attr('y', y)
+          .attr('dy', ++lineNumber * lineHeight + 'em')
+          .text(word);
+      }
+    }
+  });
 };
 
 const createChartContainer = (chartDimensions) =>
@@ -113,7 +161,7 @@ const createChartContainer = (chartDimensions) =>
     .attr('class', 'chart');
 
 const displayTooltip = (mouseCoords, data) => {
-  const offset = { x: 20, y: -15 };
+  const offset = { x: 20, y: -20 };
 
   const tooltip = document.getElementById('tooltip');
   tooltip.style.left = `${mouseCoords.x + offset.x}px`;
@@ -146,7 +194,6 @@ const drawLegend = (svg) => {
     legendScale.domain().map((val, i) => offset.y + i * legendBoxWidth)
   );
 
-  // console.log(fillColors);
   legend
     .selectAll('rect')
     .data(Object.keys(fillColors))
